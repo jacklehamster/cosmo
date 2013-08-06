@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexLibProperties includeAllClasses="true" useMultiPlatformConfig="false" version="3">
+  <includeClasses>
+    <classEntry path="com.cosmo.core.ICosmo"/>
+    <classEntry path="com.cosmo.spot.ISpot"/>
+    <classEntry path="com.cosmo.room.Room"/>
+    <classEntry path="com.cosmo.spot.Spot"/>
+    <classEntry path="com.cosmo.util.JSONUtil"/>
+    <classEntry path="com.cosmo.core.LocalCosmo"/>
+    <classEntry path="com.cosmo.core.BaseCosmo"/>
+    <classEntry path="com.cosmo.core.Cosmo"/>
+  </includeClasses>
+  <includeResources/>
+  <namespaceManifests/>
+</flexLibProperties>
