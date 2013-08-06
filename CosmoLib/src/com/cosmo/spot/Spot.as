@@ -12,7 +12,7 @@ package com.cosmo.spot
 	public class Spot extends EventDispatcher implements ISpot
 	{
 		private var _data:Object = {}, _changeList:Array = [], _roomName:String;
-		private var cosmo:BaseCosmo;
+		protected var cosmo:BaseCosmo;
 		public function Spot(roomName:String,cosmo:BaseCosmo)
 		{
 			_roomName = roomName;

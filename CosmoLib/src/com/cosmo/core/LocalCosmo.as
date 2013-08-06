@@ -2,8 +2,6 @@ package com.cosmo.core
 {
 	import com.cosmo.spot.Spot;
 	import com.cosmo.spot.ISpot;
-	import com.cosmo.spot.LocalSpot;
-	
 	import flash.events.StatusEvent;
 	import flash.net.LocalConnection;
 
@@ -17,7 +15,7 @@ package com.cosmo.core
 		
 		public function LocalCosmo()
 		{
-			myconnection.client = { broadcast:receive };
+			myconnection.client = { broadcast:receiveLocal };
 			myindex = -1;
 			for(var i:int=0;i<MAX_SLOTS;i++) {
 				registerConnection(i);
@@ -41,7 +39,7 @@ package com.cosmo.core
 			}
 		}
 		
-		private function receive(roomName,msg:Object,from:int):void {
+		private function receiveLocal(roomName,msg:Object,from:int):void {
 			if(!outboundConnections[from]) {
 				outboundConnections[from] = registerConnection(from);
 			}
@@ -61,10 +59,6 @@ package com.cosmo.core
 		
 		private function unregisterConnection(index:int):void {
 			delete outboundConnections[index];
-		}
-		
-		override protected function createSpot(roomName:String):ISpot {
-			return new Spot(roomName,this);
 		}
 	}
 }

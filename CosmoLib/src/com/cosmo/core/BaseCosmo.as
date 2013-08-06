@@ -1,10 +1,10 @@
 package com.cosmo.core
 {
-	import com.cosmo.spot.Spot;
 	import com.cosmo.spot.ISpot;
+	import com.cosmo.spot.Spot;
 	
 	import flash.events.EventDispatcher;
-	
+
 	public class BaseCosmo extends EventDispatcher
 		implements ICosmo
 	{
@@ -30,14 +30,11 @@ package com.cosmo.core
 		}
 		
 		protected function createSpot(roomName:String):ISpot {
-			return null;
+			return new Spot(roomName,this);
 		}
 		
 		protected function distributeData(roomName:String,message:Object):void {
-			for each(var spot:Spot in spots) {
-				if(spot.roomName==roomName)
-					spot.receiveData(message);
-			}
+			spots[roomName].receiveData(message);
 		}
 		
 		public function send(roomName:String,msg:Object):void {
