@@ -9,7 +9,7 @@
     <classEntry path="com.cosmo.core.LocalCosmo"/>
     <classEntry path="com.cosmo.core.BaseCosmo"/>
     <classEntry path="com.cosmo.core.ServerCosmo"/>
-    <classEntry path="com.cosmo.spot.CosmoSpot"/>
+    <classEntry path="com.cosmo.spot.ServerSpot"/>
   </includeClasses>
   <includeResources/>
   <namespaceManifests/>

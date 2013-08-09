@@ -11,7 +11,7 @@ package com.cosmo.spot
 	[Event(name="sync", type="flash.events.SyncEvent")]
 	public class Spot extends EventDispatcher implements ISpot
 	{
-		private var _data:Object = {}, _changeList:Array = [], _roomName:String;
+		protected var _data:Object = {}, _changeList:Array = [], _roomName:String;
 		protected var cosmo:BaseCosmo;
 		public function Spot(roomName:String,cosmo:BaseCosmo)
 		{
@@ -37,7 +37,7 @@ package com.cosmo.spot
 			return JSONUtil.stringify(value)==name;
 		}
 		
-		public function receiveData(msg:Object):void {
+		public function receiveData(msg:Object):Boolean {
 			var pair:Array = msg as Array;
 			try {
 				var name:String = pair[0];
@@ -47,7 +47,8 @@ package com.cosmo.spot
 				for(var i:int=0;i<access.length;i++) {
 					leafName = access[i];
 					if(i<access.length-1) {
-						if(!leaf.hasOwnProperty(leafName)) {
+						if(typeof(leaf[leafName])!="object" || !leaf.hasOwnProperty(leafName)) {
+							
 							leaf[leafName] = {};
 						}
 						leaf = leaf[leafName];
@@ -63,14 +64,20 @@ package com.cosmo.spot
 					change.code=="delete";
 				}
 				else {
-					leaf[leafName] = newValue;
+					if(!leafName.length && (leaf is Array)) {
+						leaf.push(newValue);
+					}
+					else
+						leaf[leafName] = newValue;
 					change.code=="change";
 				}
 				addChanges(change);
 			}
 			catch(error:Error) {
 				trace("Malformed message:",JSONUtil.stringify(msg));
+				return false;
 			}
+			return true;
 		}
 		
 		protected function addChanges(change:Object):void {
