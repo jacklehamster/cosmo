@@ -5,12 +5,12 @@ package com.cosmo.core
 	
 	import flash.events.EventDispatcher;
 
-	public class BaseCosmo extends EventDispatcher
+	public class Cosmo extends EventDispatcher
 		implements ICosmo
 	{
 		private var spots:Object = {};
 		
-		public function BaseCosmo()
+		public function Cosmo()
 		{
 		}
 		
@@ -33,11 +33,7 @@ package com.cosmo.core
 			return new Spot(roomName,this);
 		}
 		
-		protected function distributeData(roomName:String,message:Object):void {
-			spots[roomName].receiveData(message);
-		}
-		
-		public function send(roomName:String,msg:Object):void {
+		public function send(roomName:String,messages:Array):void {
 			//	needs overwrite
 		}
 	}

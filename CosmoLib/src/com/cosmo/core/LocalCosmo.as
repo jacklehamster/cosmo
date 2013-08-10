@@ -1,11 +1,11 @@
 package com.cosmo.core
 {
 	import com.cosmo.spot.Spot;
-	import com.cosmo.spot.ISpot;
+	
 	import flash.events.StatusEvent;
 	import flash.net.LocalConnection;
 
-	public class LocalCosmo extends BaseCosmo
+	public class LocalCosmo extends Cosmo
 	{
 		static private const MAX_SLOTS:int = 100;
 		
@@ -15,7 +15,7 @@ package com.cosmo.core
 		
 		public function LocalCosmo()
 		{
-			myconnection.client = { broadcast:receiveLocal };
+			myconnection.client = { localSend:receiveLocal };
 			myindex = -1;
 			for(var i:int=0;i<MAX_SLOTS;i++) {
 				registerConnection(i);
@@ -31,19 +31,19 @@ package com.cosmo.core
 			}
 		}
 		
-		override public function send(roomName:String,msg:Object):void {
+		override public function send(roomName:String,messages:Array):void {
 			for (var i:int=0;i<outboundConnections.length;i++) {
 				if(outboundConnections[i]) {
-					outboundConnections[i].send("cosmo"+i,"broadcast",roomName,msg,myindex);
+					outboundConnections[i].send("cosmo"+i,"localSend",roomName,messages,myindex);
 				}
 			}
 		}
 		
-		private function receiveLocal(roomName,msg:Object,from:int):void {
+		private function receiveLocal(roomName,messages:Array,from:int):void {
 			if(!outboundConnections[from]) {
 				outboundConnections[from] = registerConnection(from);
 			}
-			distributeData(roomName,msg);
+			(getSpot(roomName) as Spot).receiveMessages(messages);
 		}
 		
 		private function registerConnection(index:int):void {

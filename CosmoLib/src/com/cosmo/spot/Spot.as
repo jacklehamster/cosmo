@@ -1,7 +1,6 @@
 package com.cosmo.spot
 {
-	import com.cosmo.core.BaseCosmo;
-	import com.cosmo.core.LocalCosmo;
+	import com.cosmo.core.Cosmo;
 	import com.cosmo.util.JSONUtil;
 	import com.synco.utils.SyncoUtil;
 	
@@ -12,8 +11,8 @@ package com.cosmo.spot
 	public class Spot extends EventDispatcher implements ISpot
 	{
 		protected var _data:Object = {}, _changeList:Array = [], _roomName:String;
-		protected var cosmo:BaseCosmo;
-		public function Spot(roomName:String,cosmo:BaseCosmo)
+		protected var cosmo:Cosmo, pendingMessages:Array = [];
+		public function Spot(roomName:String,cosmo:Cosmo)
 		{
 			_roomName = roomName;
 			this.cosmo = cosmo;
@@ -29,55 +28,75 @@ package com.cosmo.spot
 		}
 		
 		public function setProperty(property:String,value:Object=null):void {
-			if(!propertyEqual(property,value))
-				cosmo.send(roomName,[property,JSONUtil.stringify(value)]);
+			if(!propertyEqual(property,value)) {
+				pendingMessages.push([property,value]);
+			}
+			SyncoUtil.callAsyncOnce(sendPendingList);
+		}
+		
+		private function sendPendingList():void {
+			var list:Array = pendingMessages;
+			cosmo.send(roomName,pendingMessages);
+			pendingMessages = [];
 		}
 		
 		protected function propertyEqual(name:String,value:Object):Boolean {
 			return JSONUtil.stringify(value)==name;
 		}
 		
-		public function receiveData(msg:Object):Boolean {
-			var pair:Array = msg as Array;
-			try {
-				var name:String = pair[0];
-				var access:Array = name.split(".");
-				var leaf:Object = data;
-				var leafName:String = name;
-				for(var i:int=0;i<access.length;i++) {
-					leafName = access[i];
-					if(i<access.length-1) {
-						if(typeof(leaf[leafName])!="object" || !leaf.hasOwnProperty(leafName)) {
-							
-							leaf[leafName] = {};
+		public function receiveMessages(messages:Array):void {
+			for each(var pair:Array in messages) {
+				try {
+					var name:String = pair[0];
+					var newValue:Object = pair[1];
+					var access:Array = name.split(".");
+					var leaf:Object = data;
+					var preLeaf:Object = null, preName:String = null;
+					var leafName:String = name;
+					for(var i:int=0;i<access.length;i++) {
+						leafName = access[i];
+						if(leaf is Array && leafName!="" && newValue!==null) {
+							var index:Number = parseFloat(leafName);
+							if(index!=int(index) || index<0 || index>leaf.length) {
+								var o:Object = {};
+								for(var n:int=0;n<leaf.length;n++) {
+									o[n] = leaf[n];
+								}
+								leaf = preLeaf[preName] = o;
+							}
 						}
-						leaf = leaf[leafName];
+						if(i<access.length-1) {
+							if(typeof(leaf[leafName])!="object") {
+								leaf[leafName] = {};
+							}
+							preLeaf = leaf; preName = leafName;
+							leaf = leaf[leafName];
+						}
 					}
-				}
-				var newValue:Object = JSONUtil.parse(pair[1]);
-				var change:Object = {newValue:newValue};
-				if(leaf.hasOwnProperty(leafName)) {
-					change.oldValue = data[name];
-				}
-				if(newValue===null) {
-					delete leaf[leafName];
-					change.code=="delete";
-				}
-				else {
-					if(!leafName.length && (leaf is Array)) {
-						leaf.push(newValue);
+					var change:Object = {newValue:newValue};
+					if(leaf.hasOwnProperty(leafName)) {
+						change.oldValue = data[name];
 					}
-					else
-						leaf[leafName] = newValue;
-					change.code=="change";
+					if(newValue===null) {
+						if(leaf is Array)
+							(leaf as Array).splice(leafName,1);
+						else
+							delete leaf[leafName];
+						change.code=="delete";
+					}
+					else {
+						if(leafName=="" && (leaf is Array))
+							leaf.push(newValue);
+						else
+							leaf[leafName] = newValue;
+						change.code=="change";
+					}
+					addChanges(change);
 				}
-				addChanges(change);
+				catch(error:Error) {
+					trace("Malformed message:",JSONUtil.stringify(pair),error);
+				}
 			}
-			catch(error:Error) {
-				trace("Malformed message:",JSONUtil.stringify(msg));
-				return false;
-			}
-			return true;
 		}
 		
 		protected function addChanges(change:Object):void {

@@ -7,7 +7,7 @@
     <classEntry path="com.cosmo.spot.Spot"/>
     <classEntry path="com.cosmo.util.JSONUtil"/>
     <classEntry path="com.cosmo.core.LocalCosmo"/>
-    <classEntry path="com.cosmo.core.BaseCosmo"/>
+    <classEntry path="com.cosmo.core.Cosmo"/>
     <classEntry path="com.cosmo.core.ServerCosmo"/>
     <classEntry path="com.cosmo.spot.ServerSpot"/>
   </includeClasses>

@@ -1,6 +1,6 @@
 package com.cosmo.spot
 {
-	import com.cosmo.core.BaseCosmo;
+	import com.cosmo.core.Cosmo;
 	import com.cosmo.core.ServerCosmo;
 	import com.cosmo.util.JSONUtil;
 	
@@ -10,16 +10,16 @@ package com.cosmo.spot
 	import flash.net.URLRequest;
 	import flash.net.URLVariables;
 	import flash.utils.Timer;
-	import flash.utils.getTimer;
 	
 	public class ServerSpot extends Spot
 	{
+		static private const UPDATETIME:int = 100;
 		private var _count:int = 1;
 		public var getLocation:String;
 		private var updateTimer:Timer;
 		private var _channel:String;
 		
-		public function ServerSpot(roomName:String, cosmo:BaseCosmo)
+		public function ServerSpot(roomName:String, cosmo:Cosmo)
 		{
 			super(roomName, cosmo);
 			enter();
@@ -53,7 +53,8 @@ package com.cosmo.spot
 		}
 		
 		private function onFirstFetch(e:Event):void {
-			updateTimer = new Timer(100);
+			onData(e);
+			updateTimer = new Timer(UPDATETIME);
 			updateTimer.addEventListener(TimerEvent.TIMER,onUpdateTimer);
 			updateTimer.start();
 		}
@@ -77,24 +78,49 @@ package com.cosmo.spot
 		private function onUpdate(e:Event):void {
 			var loader:CosmoLoader = e.currentTarget as CosmoLoader;
 			if(loader.count==count && loader.data.length) {
-				_count++;
-				var msg:Object = JSONUtil.parse(loader.data);
-				receiveData(msg);
+				try {
+					var messages:Array = JSONUtil.parse("["+loader.data+"]") as Array;
+					_count++;
+					receiveMessages(messages);
+				}
+				catch(error:Error) {
+					trace(error);
+				}
 			}
 		}
 		
 		private function onData(e:Event):void {
 			var loader:URLLoader = e.currentTarget as URLLoader;
-			var msg:Object = JSONUtil.parse(loader.data);
-			for(var o:String in msg) {
-				data[o] = msg[o];
+			if(loader.data!="") {
+				try {
+					var pair:Array = JSONUtil.parse("["+loader.data+"]") as Array;
+					for(var o:String in pair[1]) {
+						data[o] = pair[1][o];
+					}
+					_count = pair[0];
+				}
+				catch(error:Error) {
+					trace(error);
+				}
+			}
+			for(var i:String in data) {
+				addChanges({code:'change',name:i});
 			}
 		}
 	}
 }
+import flash.events.IOErrorEvent;
 import flash.net.URLLoader;
 
 internal class CosmoLoader extends URLLoader {
 	public var count:int;
 	public var url:String;
+	
+	function CosmoLoader() {
+		addEventListener(IOErrorEvent.IO_ERROR,onError);
+	}
+	
+	private function onError(e:IOErrorEvent):void {
+		trace(url,e);
+	}
 }
