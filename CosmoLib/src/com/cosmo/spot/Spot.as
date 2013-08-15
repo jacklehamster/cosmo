@@ -11,7 +11,7 @@ package com.cosmo.spot
 	public class Spot extends EventDispatcher implements ISpot
 	{
 		protected var _data:Object = {}, _changeList:Array = [], _roomName:String;
-		protected var cosmo:Cosmo, pendingMessages:Array = [];
+		protected var cosmo:Cosmo, pendingData:Object = {};
 		public function Spot(roomName:String,cosmo:Cosmo)
 		{
 			_roomName = roomName;
@@ -27,26 +27,13 @@ package com.cosmo.spot
 			return _data;
 		}
 		
-		public function setProperty(property:String,value:Object=null):void {
-			if(!propertyEqual(property,value)) {
-				pendingMessages.push([property,value]);
-			}
-			SyncoUtil.callAsyncOnce(sendPendingList);
-		}
-		
-		private function sendPendingList():void {
-			var list:Array = pendingMessages;
-			cosmo.send(roomName,pendingMessages);
-			pendingMessages = [];
-		}
-		
-		protected function propertyEqual(name:String,value:Object):Boolean {
-			return JSONUtil.stringify(value)==name;
+		public function setProperty(property:String,value:Object):void {
+			cosmo.setProperty(roomName,property,value);
 		}
 		
 		public function receiveMessages(messages:Array):void {
 			for each(var pair:Array in messages) {
-				try {
+//				try {
 					var name:String = pair[0];
 					var newValue:Object = pair[1];
 					var access:Array = name.split(".");
@@ -92,10 +79,10 @@ package com.cosmo.spot
 						change.code=="change";
 					}
 					addChanges(change);
-				}
-				catch(error:Error) {
-					trace("Malformed message:",JSONUtil.stringify(pair),error);
-				}
+//				}
+//				catch(error:Error) {
+//					trace("Malformed message:",JSONUtil.stringify(pair),error);
+//				}
 			}
 		}
 		

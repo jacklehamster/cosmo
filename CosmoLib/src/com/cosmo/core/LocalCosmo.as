@@ -9,19 +9,21 @@ package com.cosmo.core
 	{
 		static private const MAX_SLOTS:int = 100;
 		
+		private var prefix:String;
 		private var myconnection:LocalConnection = new LocalConnection();
 		private var outboundConnections:Vector.<LocalConnection> = new Vector.<LocalConnection>(MAX_SLOTS);
 		private var myindex:int;
 		
-		public function LocalCosmo()
+		public function LocalCosmo(name:String)
 		{
+			prefix = name+"_";
 			myconnection.client = { localSend:receiveLocal };
 			myindex = -1;
 			for(var i:int=0;i<MAX_SLOTS;i++) {
 				registerConnection(i);
 				if(myindex<0) {
 					try {
-						myconnection.connect("cosmo"+i);
+						myconnection.connect(prefix+i);
 						myindex = i;
 					}
 					catch(error:Error) {
@@ -31,10 +33,10 @@ package com.cosmo.core
 			}
 		}
 		
-		override public function send(roomName:String,messages:Array):void {
+		override public function setProperty(roomName:String,property:String,value:Object):void {
 			for (var i:int=0;i<outboundConnections.length;i++) {
 				if(outboundConnections[i]) {
-					outboundConnections[i].send("cosmo"+i,"localSend",roomName,messages,myindex);
+					outboundConnections[i].send(prefix+i,"localSend",roomName,[property,value],myindex);
 				}
 			}
 		}

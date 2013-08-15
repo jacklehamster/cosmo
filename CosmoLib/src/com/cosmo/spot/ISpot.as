@@ -6,6 +6,6 @@ package com.cosmo.spot
 	{
 		function get roomName():String;
 		function get data():Object;
-		function setProperty(name:String,value:Object=null):void
+		function setProperty(name:String,value:Object):void
 	}
 }

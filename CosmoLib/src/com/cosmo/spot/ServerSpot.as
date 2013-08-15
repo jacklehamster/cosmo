@@ -13,7 +13,6 @@ package com.cosmo.spot
 	
 	public class ServerSpot extends Spot
 	{
-		static private const UPDATETIME:int = 100;
 		private var _count:int = 1;
 		public var getLocation:String;
 		private var updateTimer:Timer;
@@ -42,6 +41,7 @@ package com.cosmo.spot
 			_channel = split[split.length-1];
 			getLocation = "http://"+loader.data;
 			fetchData(onFirstFetch);
+			(cosmo as ServerCosmo).broadcast(roomName);
 		}
 		
 		public function get channel():String {
@@ -54,7 +54,7 @@ package com.cosmo.spot
 		
 		private function onFirstFetch(e:Event):void {
 			onData(e);
-			updateTimer = new Timer(UPDATETIME);
+			updateTimer = new Timer(ServerCosmo.PACETIME);
 			updateTimer.addEventListener(TimerEvent.TIMER,onUpdateTimer);
 			updateTimer.start();
 		}
@@ -78,14 +78,14 @@ package com.cosmo.spot
 		private function onUpdate(e:Event):void {
 			var loader:CosmoLoader = e.currentTarget as CosmoLoader;
 			if(loader.count==count && loader.data.length) {
-				try {
+//				try {
 					var messages:Array = JSONUtil.parse("["+loader.data+"]") as Array;
 					_count++;
 					receiveMessages(messages);
-				}
-				catch(error:Error) {
-					trace(error);
-				}
+//				}
+	//			catch(error:Error) {
+//					trace(error);
+//				}
 			}
 		}
 		

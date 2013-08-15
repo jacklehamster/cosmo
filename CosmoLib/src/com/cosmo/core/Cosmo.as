@@ -9,6 +9,7 @@ package com.cosmo.core
 		implements ICosmo
 	{
 		private var spots:Object = {};
+		static private var instances:Object = {};
 		
 		public function Cosmo()
 		{
@@ -33,8 +34,16 @@ package com.cosmo.core
 			return new Spot(roomName,this);
 		}
 		
-		public function send(roomName:String,messages:Array):void {
+		public function setProperty(roomName:String,property:String,value:Object):void {
 			//	needs overwrite
+		}
+		
+		static public function getServer(server:String):ServerCosmo {
+			return instances["server_"+server] || (instances["server_"+server] = new ServerCosmo(server));
+		}
+		
+		static public function getLocal(name:String):LocalCosmo {
+			return instances["local_"+name] || (instances["local_"+name] = new LocalCosmo(name));
 		}
 	}
 }
