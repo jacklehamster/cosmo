@@ -41,7 +41,7 @@ package com.cosmo.spot
 			_channel = split[split.length-1];
 			getLocation = "http://"+loader.data;
 			fetchData(onFirstFetch);
-			(cosmo as ServerCosmo).broadcast(roomName);
+			(cosmo as Cosmo).refresh();
 		}
 		
 		public function get channel():String {
@@ -54,7 +54,7 @@ package com.cosmo.spot
 		
 		private function onFirstFetch(e:Event):void {
 			onData(e);
-			updateTimer = new Timer(ServerCosmo.PACETIME);
+			updateTimer = new Timer(Cosmo.PACETIME);
 			updateTimer.addEventListener(TimerEvent.TIMER,onUpdateTimer);
 			updateTimer.start();
 		}
@@ -78,14 +78,14 @@ package com.cosmo.spot
 		private function onUpdate(e:Event):void {
 			var loader:CosmoLoader = e.currentTarget as CosmoLoader;
 			if(loader.count==count && loader.data.length) {
-//				try {
+				try {
 					var messages:Array = JSONUtil.parse("["+loader.data+"]") as Array;
 					_count++;
 					receiveMessages(messages);
-//				}
-	//			catch(error:Error) {
-//					trace(error);
-//				}
+				}
+				catch(error:Error) {
+					trace(error);
+				}
 			}
 		}
 		

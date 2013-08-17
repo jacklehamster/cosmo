@@ -6,6 +6,8 @@ package com.cosmo.spot
 	{
 		function get roomName():String;
 		function get data():Object;
-		function setProperty(name:String,value:Object):void
+		function setProperty(property:String,value:Object):void;
+		function addLock(property:String,code:String=null):void;
+		function locked(property:String):Boolean;
 	}
 }

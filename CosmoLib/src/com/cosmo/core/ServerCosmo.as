@@ -14,44 +14,18 @@ package com.cosmo.core
 
 	public class ServerCosmo extends Cosmo
 	{
-		static public const PACETIME:int = 100;
-		public var server:String, pendingData:Object = {};
-		private var paceTimer:Timer = new Timer(PACETIME,1);
+		public var server:String;
 		
 		public function ServerCosmo(server:String)
 		{
 			super();
 			this.server = server;
-			paceTimer.addEventListener(TimerEvent.TIMER_COMPLETE,broadcastAll);
 		}
 		
-		override public function setProperty(roomName:String,path:String,value:Object):void {
-			if(!pendingData[roomName]) {
-				pendingData[roomName] = {};
-			}
-			pendingData[roomName][path] = value;
-			SyncoUtil.callAsyncOnce(broadcastAll);
-		}
-		
-		private function broadcastAll(e:TimerEvent=null):void {
-			if(!paceTimer.running) {
-				for(var roomName:String in pendingData) {
-					broadcast(roomName);
-				}
-			}
-		}
-		
-		public function broadcast(roomName:String):void {
-			if(!pendingData[roomName])
-				return ;
+		override protected function broadcast(roomName:String,messages:Array,callback:Function):Boolean {
 			var spot:ServerSpot = getSpot(roomName) as ServerSpot;
 			if(!spot.channel)
-				return ;
-			var messages:Array = [];
-			for(var i:String in pendingData[roomName]) {
-				messages.push([i,pendingData[roomName][i]]);
-			}
-			delete pendingData[roomName];
+				return false;
 			
 			var loader:URLLoader = new URLLoader();
 			var url:String = server;
@@ -66,15 +40,10 @@ package com.cosmo.core
 			}
 			request.data.data = toSend;
 			request.data.count = spot.count;
-			loader.addEventListener(Event.COMPLETE,
-				function(e:Event):void {
-					broadcast(roomName);
-				});
+			loader.addEventListener(Event.COMPLETE,callback);
 			loader.addEventListener(IOErrorEvent.IO_ERROR,onError);
 			loader.load(request);
-			
-			paceTimer.reset();
-			paceTimer.start();
+			return true;
 		}
 		
 		private function onError(e:IOErrorEvent):void {
