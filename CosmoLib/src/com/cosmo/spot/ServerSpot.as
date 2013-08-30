@@ -39,6 +39,7 @@ package com.cosmo.spot
 			var loader:URLLoader = e.currentTarget as URLLoader;
 			var split:Array = loader.data.split("/");
 			_channel = split[split.length-1];
+			cosmo.system.channel = _channel;
 			getLocation = "http://"+loader.data;
 			fetchData(onFirstFetch);
 			(cosmo as Cosmo).refresh();
@@ -53,10 +54,10 @@ package com.cosmo.spot
 		}
 		
 		private function onFirstFetch(e:Event):void {
-			onData(e);
 			updateTimer = new Timer(Cosmo.PACETIME);
-			updateTimer.addEventListener(TimerEvent.TIMER,onUpdateTimer);
-			updateTimer.start();
+			//			updateTimer.addEventListener(TimerEvent.TIMER,onUpdateTimer);
+			//			updateTimer.start();
+			onData(e);
 		}
 		
 		private function onUpdateTimer(e:TimerEvent):void {
@@ -66,8 +67,22 @@ package com.cosmo.spot
 		private function fetchData(callback:Function=null):void {
 			if(getLocation) {
 				var loader:CosmoLoader = new CosmoLoader();
-				var url:String = updateTimer?getLocation+"/"+count+".json":getLocation+"/data.json";//?"+new Date().time;
-				var request:URLRequest = new URLRequest(url);
+//				var url:String = updateTimer?getLocation+"/"+count+".json":getLocation+"/data.json";//?"+new Date().time;
+				var url:String, request:URLRequest;
+				if(updateTimer) {
+					url = (cosmo as ServerCosmo).server;//updateTimer?getLocation+"/"+count+".json":getLocation+"/data.json";//?"+new Date().time;
+					request = new URLRequest(url);
+					request.data = new URLVariables();
+					request.data.action = "get";
+					request.data.channel = channel;
+					request.data.count = count;
+				}
+				else {
+					url = getLocation+"/data.json";
+					request = new URLRequest(url);
+				}
+				
+				
 				loader.addEventListener(Event.COMPLETE,callback!=null?callback:updateTimer?onUpdate:onData);
 				loader.load(request);
 				loader.url = url;
@@ -87,6 +102,7 @@ package com.cosmo.spot
 					trace(error);
 				}
 			}
+			fetchData();
 		}
 		
 		private function onData(e:Event):void {
@@ -106,6 +122,7 @@ package com.cosmo.spot
 			for(var i:String in data) {
 				addChanges({code:'change',name:i});
 			}
+			fetchData();
 		}
 	}
 }

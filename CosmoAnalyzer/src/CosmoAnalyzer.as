@@ -19,8 +19,8 @@ package
 	
 	public class CosmoAnalyzer extends Sprite
 	{
-		private var cosmo:ICosmo = Cosmo.getLocal("cosmo");
-//		private var cosmo:ICosmo = Cosmo.getServer("http://vincent.netau.net/cosmo2.php");//LocalCosmo();
+//		private var cosmo:ICosmo = Cosmo.getLocal("cosmo");
+		private var cosmo:ICosmo = Cosmo.getServer("http://vincent.netau.net/cosmo2.php");//LocalCosmo();
 		private var spot:ISpot = cosmo.getSpot("wormsy");
 		
 		private var log:TextField = new TextField();
